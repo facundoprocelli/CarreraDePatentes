@@ -1,5 +1,15 @@
 package org.example.GUI;
 
+import org.example.Conectar.ConexionBD;
+import org.example.Module.Jugador;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class framePrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify
@@ -28,6 +38,7 @@ public class framePrincipal extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+
     // End of variables declaration
     public framePrincipal() {
         initComponents();
@@ -35,6 +46,7 @@ public class framePrincipal extends javax.swing.JFrame {
 
 
     private void initComponents() {
+
 
         jPanel4 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -62,6 +74,7 @@ public class framePrincipal extends javax.swing.JFrame {
         areaDeTextoEstadisticas = new javax.swing.JTextArea();
         jLabel8 = new javax.swing.JLabel();
 
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(1016, 630)); // todo: hay que probar bien el tamaño para saber bien cual es
         setResizable(false);
@@ -70,13 +83,13 @@ public class framePrincipal extends javax.swing.JFrame {
         jPanel4.setPreferredSize(new java.awt.Dimension(1000, 600));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
+                new Object[][]{
                         {null, null, null, null},
                         {null, null, null, null},
                         {null, null, null, null},
                         {null, null, null, null}
                 },
-                new String [] {
+                new String[]{
                         "ID", "Nombre", "Patente", "Días 1°"
                 }
         ));
@@ -374,6 +387,26 @@ public class framePrincipal extends javax.swing.JFrame {
     }// </editor-fold>
 
     private void BotonAgregarJugadorActionPerformed(java.awt.event.ActionEvent evt) {
+
+        String nombre = CampoNombre.getText();
+        ConexionBD.conectarBD();
+
+        try {
+            if (!nombreRepetido(nombre)) {
+                Jugador jugador = new Jugador(nombre);
+                ConexionBD.cargarDato(jugador);
+                ConexionBD.desconaectarBD();
+            } else {
+                ErrorPopUp.showErrorDialog(this, "El nombre esta repetido");
+            }
+        } catch (SQLException e) {
+            ErrorPopUp.showErrorDialog(this, "No se pudieron cargar los datos");
+        }
+
+        CampoNombre.setText("");
+    }
+
+    private void CampoNombreActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
     }
 
@@ -390,10 +423,78 @@ public class framePrincipal extends javax.swing.JFrame {
     }
 
     private void botonEnviarPatenteActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+
+        String nombre = CampoNombrePatenteNueva1.getText();
+        String patente = CampoPatenteNueva.getText();
+
+
+        if (nombreRepetido(nombre) && patenteValida(patente)) {
+
+            try {
+                ConexionBD.conectarBD();
+                ConexionBD.editarDato(nombre, patente);
+                ConexionBD.desconaectarBD();
+                ErrorPopUp.showErrorDialog(this, "Se modifico la patente de forma exitosa");
+            } catch (SQLException e) {
+                ErrorPopUp.showErrorDialog(this, "No se pudieron actualzar los datos");
+            }
+        } else {
+            ErrorPopUp.showErrorDialog(this, "La Patente o el nombre no son validos");
+        }
+
+        CampoPatenteNueva.setText("");
+        CampoNombrePatenteNueva1.setText("");
+
+
     }
 
-    private void CampoNombreActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+
+    private boolean patenteValida(String patente) {
+        boolean rta = false;
+        if (patente.length() == 7) {
+            rta = validarPatente(patente);
+            System.out.println(rta);
+        }
+        return rta;
     }
+
+    public static boolean validarPatente(String patente) {
+
+        boolean rta = false;
+        // Crear un patrón a partir de la expresión regular
+        Pattern modeloPatenteCompleto = Pattern.compile("^[A-Z]{2}[0-9]{3}[A-Z]{2}$");
+        Pattern modeloPatenteParcial = Pattern.compile("^[A-Z]{2}[0-9]{3}\\*{2}$");
+
+        // Crear un matcher para la cadena de la patente
+        Matcher matcherParcial = modeloPatenteParcial.matcher(patente);
+        Matcher matcherCompleto = modeloPatenteCompleto.matcher(patente);
+
+        // Verificar si la cadena coincide con el patrón
+        if (matcherCompleto.matches() || matcherParcial.matches()) {
+            rta = true;
+        }
+        return rta;
+    }
+
+
+    public void empezarPrograma() {
+
+        framePrincipal frame = new framePrincipal();
+        frame.setVisible(true);
+
+    }
+
+    private boolean nombreRepetido(String nombre) {
+        
+        boolean rta = false;
+        ArrayList<Jugador> jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
+
+        for (Jugador j : jugadores) {
+            if (j.getNombre().equals(nombre)) {
+                rta = true;
+            }
+        }
+        return rta;
+    }
+
 }

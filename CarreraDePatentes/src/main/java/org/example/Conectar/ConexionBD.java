@@ -7,16 +7,16 @@ import java.util.ArrayList;
 
 public class ConexionBD {
 
-    private String url = "jdbc:mysql://127.0.0.1:3306/carreradepatentes";
-    private String contrasena = "";
-    private String usuario = "root";
-    private Connection connection;
+    private static String url = "jdbc:mysql://127.0.0.1:3306/carreradepatentes";
+    private  static String contrasena = "";
+    private  static String usuario = "root";
+    private static Connection connection;
 
 
     public ConexionBD() {
     }
 
-    public void conectarBD() {
+    public static void conectarBD() {
 
         try {
             //Creo una conexion con la base de datos
@@ -27,14 +27,14 @@ public class ConexionBD {
         }
     }
 
-    public void desconaectarBD() throws SQLException {
+    public static void desconaectarBD() throws SQLException {
 
-        if (this.connection != null && !this.connection.isClosed()) {
-            this.connection.close();
+        if (connection != null && !connection.isClosed()) {
+            connection.close();
         }
     }
 
-    public ArrayList<Jugador> pedirDatos() throws SQLException {
+    public  static ArrayList<Jugador> pedirDatos() throws SQLException {
 
         ArrayList<Jugador> jugadores = new ArrayList<>();
 
@@ -58,7 +58,7 @@ public class ConexionBD {
     }
 
 
-    public void cargarDato(Jugador jugador) throws SQLException {
+    public static void cargarDato(Jugador jugador) throws SQLException {
 
         //Prompt de carga de dato
         PreparedStatement statement = connection.prepareStatement("INSERT INTO usuarios(id_usuario, nombre, patente, dias_primero) VALUES (?,?,?,?)");
@@ -77,14 +77,14 @@ public class ConexionBD {
 
     }
 
-    public void editarDato(int id_usuario, String patente) throws SQLException {
+    public static void editarDato(String nombre, String patente) throws SQLException {
 
         //Prompt actualización de datos
-        PreparedStatement statement = connection.prepareStatement("UPDATE usuarios SET patente = ? WHERE id_usuario = ?");
+        PreparedStatement statement = connection.prepareStatement("UPDATE usuarios SET patente = ? WHERE nombre = ?");
 
         //Modifico los datos
         statement.setString(1, patente);
-        statement.setInt(2, id_usuario);
+        statement.setString(2, nombre);
 
         //Ejecuto la modificación
         statement.executeUpdate();

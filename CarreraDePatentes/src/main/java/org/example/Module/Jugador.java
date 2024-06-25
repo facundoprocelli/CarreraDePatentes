@@ -1,5 +1,10 @@
 package org.example.Module;
 
+import org.example.Conectar.ConexionBD;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 public class Jugador {
 
     private int id_usuario;
@@ -15,7 +20,7 @@ public class Jugador {
     }
 
     public Jugador(String nombre) {
-        this.id_usuario = -1; //todo: Hay que hacer el id autoincremental
+        this.id_usuario = proximoID();
         this.nombre = nombre;
         this.patente = "AA000AA";
         this.dias_primero = 0;
@@ -39,6 +44,34 @@ public class Jugador {
 
     public void setPatente(String patente) {
         this.patente = patente;
+    }
+
+    private int proximoID() {
+
+        ArrayList<Jugador> jugadores = bajarArrayListDeJugadoresdeDB();
+        return buscarIdMayor(jugadores) + 1;
+    }
+
+    public static ArrayList<Jugador> bajarArrayListDeJugadoresdeDB(){
+        ConexionBD conexionBD = new ConexionBD();
+        ArrayList<Jugador> jugadores;
+        try {
+            conexionBD.conectarBD();
+            jugadores = conexionBD.pedirDatos();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return jugadores;
+    }
+
+    private int buscarIdMayor(ArrayList<Jugador> jugadores) {
+        int id = 0;
+        for (Jugador j : jugadores) {
+            if (j.getId_usuario() > id) {
+                id = j.getId_usuario();
+            }
+        }
+        return id;
     }
 
     @Override
