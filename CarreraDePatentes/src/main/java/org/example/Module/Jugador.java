@@ -5,7 +5,7 @@ import org.example.Conectar.ConexionBD;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class Jugador {
+public class Jugador implements Comparable {
 
     private int id_usuario;
     private String nombre;
@@ -25,6 +25,11 @@ public class Jugador {
         this.patente = "AA000AA";
         this.dias_primero = 0;
     }
+    public Jugador(String nombre, String patente, int dias_primero){
+        this.nombre = nombre;
+        this.patente = patente;
+        this.dias_primero = dias_primero;
+    }
 
     public String getNombre() {
         return nombre;
@@ -42,6 +47,10 @@ public class Jugador {
         return patente;
     }
 
+    public  void setDias_primero(int dias_primero) {
+        this.dias_primero = dias_primero;
+    }
+
     public void setPatente(String patente) {
         this.patente = patente;
     }
@@ -52,7 +61,7 @@ public class Jugador {
         return buscarIdMayor(jugadores) + 1;
     }
 
-    public static ArrayList<Jugador> bajarArrayListDeJugadoresdeDB(){
+    public static ArrayList<Jugador> bajarArrayListDeJugadoresdeDB() {
         ConexionBD conexionBD = new ConexionBD();
         ArrayList<Jugador> jugadores;
         try {
@@ -72,6 +81,10 @@ public class Jugador {
             }
         }
         return id;
+    }
+
+    public void sumarUnDiaGanado(){
+        setDias_primero(getDias_primero() + 1);
     }
 
     @Override
@@ -100,4 +113,14 @@ public class Jugador {
     public int hashCode() {
         return 1;
     }
+
+    @Override
+    public int compareTo(Object o) {
+        int rta = -2;
+        if (o instanceof Jugador j) {
+            rta = this.patente.compareTo(j.getPatente());
+        }
+        return rta;
+    }
+
 }

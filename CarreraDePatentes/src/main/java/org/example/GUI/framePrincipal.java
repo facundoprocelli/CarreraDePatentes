@@ -4,11 +4,21 @@ import org.example.Conectar.ConexionBD;
 import org.example.Module.Jugador;
 
 import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class framePrincipal extends javax.swing.JFrame {
 
@@ -42,6 +52,11 @@ public class framePrincipal extends javax.swing.JFrame {
     // End of variables declaration
     public framePrincipal() {
         initComponents();
+
+        cargarTablaJugadores();
+
+        sumarDiasGanando();
+       // tareasPeriodicas();
     }
 
 
@@ -84,13 +99,35 @@ public class framePrincipal extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][]{
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+                        {null, null, null},
+
                 },
                 new String[]{
-                        "ID", "Nombre", "Patente", "Días 1°"
+                        "Nombre", "Patente", "Días 1°"
                 }
         ));
         jScrollPane1.setViewportView(jTable1);
@@ -404,6 +441,7 @@ public class framePrincipal extends javax.swing.JFrame {
         }
 
         CampoNombre.setText("");
+        cargarTablaJugadores();
     }
 
     private void CampoNombreActionPerformed(java.awt.event.ActionEvent evt) {
@@ -411,7 +449,7 @@ public class framePrincipal extends javax.swing.JFrame {
     }
 
     private void botonRefrescarActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+        cargarTablaJugadores();
     }
 
     private void CampoPatenteNuevaActionPerformed(java.awt.event.ActionEvent evt) {
@@ -444,6 +482,7 @@ public class framePrincipal extends javax.swing.JFrame {
 
         CampoPatenteNueva.setText("");
         CampoNombrePatenteNueva1.setText("");
+        cargarTablaJugadores();
 
 
     }
@@ -485,7 +524,7 @@ public class framePrincipal extends javax.swing.JFrame {
     }
 
     private boolean nombreRepetido(String nombre) {
-        
+
         boolean rta = false;
         ArrayList<Jugador> jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
 
@@ -497,4 +536,72 @@ public class framePrincipal extends javax.swing.JFrame {
         return rta;
     }
 
+    private void cargarTablaJugadores() {
+
+        ArrayList<Jugador> jugadores;
+        //TableModel model = jTable1.getModel();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+
+        jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
+        jugadores.sort(Comparator.comparing(Jugador::getPatente).reversed());
+
+        for (int i = 0; i < jugadores.size(); i++) {
+
+            Jugador j = jugadores.get(i);
+            model.setValueAt(j.getNombre(), i, 0);
+            model.setValueAt(j.getPatente(), i, 1);
+            model.setValueAt(j.getDias_primero(), i, 2);
+        }
+    }
+
+
+    private void sumarDiasGanando() {
+        ArrayList<Jugador> jugadores;
+
+        jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
+        jugadores.sort(Comparator.comparing(Jugador::getPatente).reversed());
+
+        Jugador jugador = jugadores.getFirst();
+        jugador.setDias_primero(jugador.getDias_primero() + 1);
+        actualizarDiasEnBD(jugador);
+        System.out.println(jugador);
+    }
+
+    public void actualizarDiasEnBD(Jugador jugador){
+
+        ConexionBD.conectarBD();
+
+    }
+
+    private void tareasPeriodicas() {
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        Runnable tarea = new Runnable() {
+            @Override
+            public void run() {
+                sumarDiasGanando();
+            }
+        };
+
+        // Calcula el tiempo para la primera ejecución (24 horas después de ahora)
+        long delayInicial = calcularDelayInicial();
+
+        // Programa la tarea para ejecutarse cada 24 horas
+        scheduler.scheduleAtFixedRate(tarea, delayInicial, 24, TimeUnit.HOURS);
+    }
+
+
+    private static long calcularDelayInicial() {
+        // Calcula el delay inicial hasta la próxima ejecución
+        long ahora = System.currentTimeMillis();
+        long horasEnMilisegundos = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+        long proximaEjecucion = ahora + horasEnMilisegundos - (ahora % horasEnMilisegundos);
+        return proximaEjecucion - ahora;
+    }
 }
+
+
+
+
+
