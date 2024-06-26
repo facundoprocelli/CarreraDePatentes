@@ -4,23 +4,14 @@ import org.example.Conectar.ConexionBD;
 import org.example.Module.Jugador;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import java.awt.*;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-import java.util.Date;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class framePrincipal extends javax.swing.JFrame {
 
@@ -50,17 +41,21 @@ public class framePrincipal extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private LocalDate ultimaFechaDeActualizacion;
+    private int ordenActual;
+    private String ultimaPatente;
 
     // End of variables declaration
     public framePrincipal() {
         initComponents();
-        cargarTablaJugadores();
+        ordenActual = 1;
+        ultimaPAtenteAgregada();
+        //ultimaPatente = "AA999AA";
+        cargarTablaJugadores(ordenActual);
+        mostrarEstadisticas();
     }
 
 
     private void initComponents() {
-
 
 
         jPanel4 = new javax.swing.JPanel();
@@ -313,7 +308,7 @@ public class framePrincipal extends javax.swing.JFrame {
                                 .addGap(63, 63, 63))
         );
 
-        botonRefrescar.setText("Refrescar");
+        botonRefrescar.setText("Orden:  Patentes");
         botonRefrescar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 botonRefrescarActionPerformed(evt);
@@ -324,11 +319,15 @@ public class framePrincipal extends javax.swing.JFrame {
         jPanel6.setPreferredSize(new java.awt.Dimension(343, 130));
 
         areaDeTextoEstadisticas.setBackground(new java.awt.Color(245, 245, 245));
-        areaDeTextoEstadisticas.setColumns(20);
+        areaDeTextoEstadisticas.setColumns(23);
         areaDeTextoEstadisticas.setFont(new java.awt.Font("Yu Gothic", 1, 14)); // NOI18N
         areaDeTextoEstadisticas.setRows(3);
         areaDeTextoEstadisticas.setBorder(null);
+        areaDeTextoEstadisticas.setEditable(false);
+
         jScrollPane2.setViewportView(areaDeTextoEstadisticas);
+        jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -423,25 +422,34 @@ public class framePrincipal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>
 
+
+    public void setUltimaPatente(String ultimaPatente) {
+        this.ultimaPatente = ultimaPatente;
+    }
+
     private void BotonAgregarJugadorActionPerformed(java.awt.event.ActionEvent evt) {
 
         String nombre = CampoNombre.getText();
         ConexionBD.conectarBD();
 
         try {
-            if (!nombreRepetido(nombre)) {
-                Jugador jugador = new Jugador(nombre);
-                ConexionBD.cargarDato(jugador);
-                ConexionBD.desconaectarBD();
+            if (!nombre.isBlank()) {
+                if (!nombreRepetido(nombre)) {
+                    Jugador jugador = new Jugador(nombre);
+                    ConexionBD.cargarDato(jugador);
+                    ConexionBD.desconaectarBD();
+                } else {
+                    ErrorPopUp.showErrorDialog(this, "El nombre esta repetido");
+                }
             } else {
-                ErrorPopUp.showErrorDialog(this, "El nombre esta repetido");
+                ErrorPopUp.showErrorDialog(this, "El nombre está vacío");
             }
         } catch (SQLException e) {
             ErrorPopUp.showErrorDialog(this, "No se pudieron cargar los datos");
         }
 
         CampoNombre.setText("");
-        cargarTablaJugadores();
+        cargarTablaJugadores(ordenActual);
     }
 
     private void CampoNombreActionPerformed(java.awt.event.ActionEvent evt) {
@@ -449,8 +457,30 @@ public class framePrincipal extends javax.swing.JFrame {
     }
 
     private void botonRefrescarActionPerformed(java.awt.event.ActionEvent evt) {
-        cargarTablaJugadores();
+
+        ordenActual++;
+        if (ordenActual > 3) {
+            ordenActual = 1;
+        }
+        cambiarTextoBotonRefrescar(ordenActual);
+        cargarTablaJugadores(ordenActual);
     }
+
+    public void cambiarTextoBotonRefrescar(int orden) {
+
+        switch (orden) {
+            case 1:
+                botonRefrescar.setText("Orden:  Patentes");
+                break;
+            case 2:
+                botonRefrescar.setText("Orden:  Días Primero");
+                break;
+            case 3:
+                botonRefrescar.setText("Orden: Alfabetico");
+        }
+
+    }
+
 
     private void CampoPatenteNuevaActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
@@ -463,7 +493,7 @@ public class framePrincipal extends javax.swing.JFrame {
     private void botonEnviarPatenteActionPerformed(java.awt.event.ActionEvent evt) {
 
         String nombre = CampoNombrePatenteNueva1.getText();
-        String patente = CampoPatenteNueva.getText();
+        String patente = CampoPatenteNueva.getText().toUpperCase();
 
 
         if (nombreRepetido(nombre) && patenteValida(patente)) {
@@ -473,6 +503,7 @@ public class framePrincipal extends javax.swing.JFrame {
                 ConexionBD.editarDato(nombre, patente);
                 ConexionBD.desconaectarBD();
                 ErrorPopUp.showErrorDialog(this, "Se modifico la patente de forma exitosa");
+                setUltimaPatente(patente);
             } catch (SQLException e) {
                 ErrorPopUp.showErrorDialog(this, "No se pudieron actualzar los datos");
             }
@@ -482,8 +513,9 @@ public class framePrincipal extends javax.swing.JFrame {
 
         CampoPatenteNueva.setText("");
         CampoNombrePatenteNueva1.setText("");
-        cargarTablaJugadores();
+        cargarTablaJugadores(ordenActual);
 
+        mostrarEstadisticas();
 
     }
 
@@ -538,14 +570,53 @@ public class framePrincipal extends javax.swing.JFrame {
         return rta;
     }
 
-    private void cargarTablaJugadores() {
+
+    //Cargar la tabla de jugadores
+    private void cargarTablaJugadores(int orden) {
 
         ArrayList<Jugador> jugadores;
-        //TableModel model = jTable1.getModel();
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
+        ordenarJugadores(jugadores, orden);
+        modificarTabla(jugadores);
+
+    }
+
+
+    private void ordenarJugadores(ArrayList<Jugador> jugadores, int orden) {
+        switch (orden) {
+            case 1:
+                ordenarTablaPorPatentes(jugadores);
+                break;
+            case 2:
+                ordenarTablaPorDiasPrimero(jugadores);
+                break;
+            case 3:
+                ordenarTablaPorNombre(jugadores);
+                break;
+        }
+    }
+
+    private ArrayList<Jugador> ordenarTablaPorPatentes(ArrayList<Jugador> jugadores) {
+
         jugadores.sort(Comparator.comparing(Jugador::getPatente).reversed());
+        return jugadores;
+    }
+
+    private ArrayList<Jugador> ordenarTablaPorDiasPrimero(ArrayList<Jugador> jugadores) {
+
+        jugadores.sort(Comparator.comparing(Jugador::getDias_primero).reversed());
+        return jugadores;
+    }
+
+    private ArrayList<Jugador> ordenarTablaPorNombre(ArrayList<Jugador> jugadores) {
+
+        jugadores.sort(Comparator.comparing(Jugador::getNombre));
+        return jugadores;
+    }
+
+    private void modificarTabla(ArrayList<Jugador> jugadores) {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         for (int i = 0; i < jugadores.size(); i++) {
 
@@ -554,33 +625,39 @@ public class framePrincipal extends javax.swing.JFrame {
             model.setValueAt(j.getPatente(), i, 1);
             model.setValueAt(j.getDias_primero(), i, 2);
         }
+
     }
 
 
     private void actualizarDiasGanando() {
 
         Jugador jugador = getJugadorGanando();
-        try {
-            int diasAAumentar = diasAAumetar();
-            if (diasAAumentar != 0) {
-                jugador.setDias_primero(jugador.getDias_primero() + diasAAumentar);
-                actualizarDiasEnBD(jugador);
-                actualizarFechaEnBD();
+        if (jugador != null) {
+            try {
+                int diasAAumentar = diasAAumetar();
+                if (diasAAumentar != 0) {
+                    jugador.setDias_primero(jugador.getDias_primero() + diasAAumentar);
+                    actualizarDiasEnBD(jugador);
+                    actualizarFechaEnBD();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
-
     }
 
 
     private Jugador getJugadorGanando() {
         ArrayList<Jugador> jugadores;
-
+        Jugador jugadorRetorno = null;
         jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
         jugadores.sort(Comparator.comparing(Jugador::getPatente).reversed());
 
-        return jugadores.getFirst();
+        if (!jugadores.isEmpty()) {
+            jugadorRetorno = jugadores.getFirst();
+        }
+
+        return jugadorRetorno;
 
     }
 
@@ -595,7 +672,7 @@ public class framePrincipal extends javax.swing.JFrame {
             System.out.println(diasEntreFechas);
         }
 
-        return (int) diasEntreFechas *-1;
+        return (int) diasEntreFechas * -1;
     }
 
     public void actualizarDiasEnBD(Jugador jugador) throws SQLException {
@@ -611,6 +688,58 @@ public class framePrincipal extends javax.swing.JFrame {
         ConexionBD.conectarBD();
         ConexionBD.cargarDato(LocalDate.now());
         ConexionBD.desconaectarBD();
+    }
+
+
+    public void mostrarEstadisticas() {
+
+        String mensaje = String.format("""
+                El Jugador que más días primero va es: %s
+                La patente más reciente es: %s
+                La ultima patente agregada es: %s
+                """, getDatoMayoJugador("dias_primero"), getDatoMayoJugador("patente"), ultimaPatente);
+
+        areaDeTextoEstadisticas.setText(mensaje);
+    }
+
+
+    private String getDatoMayoJugador(String columna){
+        String dato = "";
+        try {
+            ConexionBD.conectarBD();
+            dato = ConexionBD.pedirDatoEspecificoJugadores(columna);
+            ConexionBD.desconaectarBD();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return dato;
+
+    }
+
+    private void ultimaPAtenteAgregada(){
+        try {
+            ConexionBD.conectarBD();
+             ultimaPatente = ConexionBD.pedirDatoUltimoJugadorIngresadoABD("patente");
+             ConexionBD.desconaectarBD();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private String getUltimoDatoAgregado(String columna) {
+        String dato = "";
+
+        try{
+            ConexionBD.conectarBD();
+            dato = ConexionBD.pedirDatoUltimoJugadorIngresadoABD(columna);
+            ConexionBD.desconaectarBD();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return dato;
     }
 
 

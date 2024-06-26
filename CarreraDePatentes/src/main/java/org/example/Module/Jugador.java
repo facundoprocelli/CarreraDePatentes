@@ -66,7 +66,7 @@ public class Jugador implements Comparable {
         ArrayList<Jugador> jugadores;
         try {
             conexionBD.conectarBD();
-            jugadores = conexionBD.pedirDatos();
+            jugadores = conexionBD.pedirDatosJugadores();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -35,7 +35,7 @@ public class ConexionBD {
         }
     }
 
-    public static ArrayList<Jugador> pedirDatos() throws SQLException {
+    public static ArrayList<Jugador> pedirDatosJugadores() throws SQLException {
 
         ArrayList<Jugador> jugadores = new ArrayList<>();
 
@@ -56,6 +56,34 @@ public class ConexionBD {
 
         resultSet.close();
         return jugadores;
+    }
+
+    public static String pedirDatoEspecificoJugadores(String columna) throws SQLException {
+
+        String dato = "No hay datos";
+        PreparedStatement state = connection.prepareStatement("SELECT MAX(" + columna + ") AS mayor_dato FROM usuarios");
+        ResultSet resultSet = state.executeQuery();
+
+        if(resultSet.next()){
+            dato = resultSet.getString("mayor_dato");
+        }
+
+        resultSet.close();
+        return dato;
+    }
+
+    public static String pedirDatoUltimoJugadorIngresadoABD(String columna) throws SQLException {
+        String dato = "No hay datos";
+        PreparedStatement state = connection.prepareStatement("SELECT " + columna + " FROM usuarios ORDER BY id_usuario DESC LIMIT 1");
+        ResultSet resultSet = state.executeQuery();
+
+        if(resultSet.next()){
+            dato = resultSet.getString(columna);
+        }
+
+        resultSet.close();
+        return dato;
+
     }
 
     public static LocalDate pedirUltimaFechaRegistrada() throws SQLException {
