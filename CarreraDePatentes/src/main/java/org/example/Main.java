@@ -12,7 +12,5 @@ public class Main {
 
         framePrincipal framePrincipal = new framePrincipal();
         framePrincipal.empezarPrograma();
-
-
     }
 }

@@ -9,6 +9,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -48,19 +50,17 @@ public class framePrincipal extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private LocalDate ultimaFechaDeActualizacion;
 
     // End of variables declaration
     public framePrincipal() {
         initComponents();
-
         cargarTablaJugadores();
-
-        sumarDiasGanando();
-       // tareasPeriodicas();
     }
 
 
     private void initComponents() {
+
 
 
         jPanel4 = new javax.swing.JPanel();
@@ -518,8 +518,10 @@ public class framePrincipal extends javax.swing.JFrame {
 
     public void empezarPrograma() {
 
+        actualizarDiasGanando();
         framePrincipal frame = new framePrincipal();
         frame.setVisible(true);
+
 
     }
 
@@ -555,50 +557,63 @@ public class framePrincipal extends javax.swing.JFrame {
     }
 
 
-    private void sumarDiasGanando() {
+    private void actualizarDiasGanando() {
+
+        Jugador jugador = getJugadorGanando();
+        try {
+            int diasAAumentar = diasAAumetar();
+            if (diasAAumentar != 0) {
+                jugador.setDias_primero(jugador.getDias_primero() + diasAAumentar);
+                actualizarDiasEnBD(jugador);
+                actualizarFechaEnBD();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+    private Jugador getJugadorGanando() {
         ArrayList<Jugador> jugadores;
 
         jugadores = Jugador.bajarArrayListDeJugadoresdeDB();
         jugadores.sort(Comparator.comparing(Jugador::getPatente).reversed());
 
-        Jugador jugador = jugadores.getFirst();
-        jugador.setDias_primero(jugador.getDias_primero() + 1);
-        actualizarDiasEnBD(jugador);
-        System.out.println(jugador);
+        return jugadores.getFirst();
+
     }
 
-    public void actualizarDiasEnBD(Jugador jugador){
+    private int diasAAumetar() throws SQLException {
+
+        long diasEntreFechas = 0;
+        LocalDate fechaActual = LocalDate.now();
+        LocalDate ultimaFechaRegistrada = ConexionBD.pedirUltimaFechaRegistrada();
+        System.out.println(ultimaFechaRegistrada);
+        if (!ultimaFechaRegistrada.isEqual(fechaActual)) {
+            diasEntreFechas = ChronoUnit.DAYS.between(fechaActual, ultimaFechaRegistrada);
+            System.out.println(diasEntreFechas);
+        }
+
+        return (int) diasEntreFechas *-1;
+    }
+
+    public void actualizarDiasEnBD(Jugador jugador) throws SQLException {
 
         ConexionBD.conectarBD();
+        ConexionBD.editarDato(jugador.getNombre(), jugador.getDias_primero());
+        ConexionBD.desconaectarBD();
 
     }
 
-    private void tareasPeriodicas() {
+    public void actualizarFechaEnBD() throws SQLException {
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-        Runnable tarea = new Runnable() {
-            @Override
-            public void run() {
-                sumarDiasGanando();
-            }
-        };
-
-        // Calcula el tiempo para la primera ejecución (24 horas después de ahora)
-        long delayInicial = calcularDelayInicial();
-
-        // Programa la tarea para ejecutarse cada 24 horas
-        scheduler.scheduleAtFixedRate(tarea, delayInicial, 24, TimeUnit.HOURS);
+        ConexionBD.conectarBD();
+        ConexionBD.cargarDato(LocalDate.now());
+        ConexionBD.desconaectarBD();
     }
 
 
-    private static long calcularDelayInicial() {
-        // Calcula el delay inicial hasta la próxima ejecución
-        long ahora = System.currentTimeMillis();
-        long horasEnMilisegundos = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-        long proximaEjecucion = ahora + horasEnMilisegundos - (ahora % horasEnMilisegundos);
-        return proximaEjecucion - ahora;
-    }
 }
 
 

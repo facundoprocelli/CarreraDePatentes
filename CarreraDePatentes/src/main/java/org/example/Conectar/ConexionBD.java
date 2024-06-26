@@ -3,13 +3,14 @@ package org.example.Conectar;
 import org.example.Module.Jugador;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class ConexionBD {
 
     private static String url = "jdbc:mysql://127.0.0.1:3306/carreradepatentes";
-    private  static String contrasena = "";
-    private  static String usuario = "root";
+    private static String contrasena = "";
+    private static String usuario = "root";
     private static Connection connection;
 
 
@@ -34,7 +35,7 @@ public class ConexionBD {
         }
     }
 
-    public  static ArrayList<Jugador> pedirDatos() throws SQLException {
+    public static ArrayList<Jugador> pedirDatos() throws SQLException {
 
         ArrayList<Jugador> jugadores = new ArrayList<>();
 
@@ -57,6 +58,33 @@ public class ConexionBD {
         return jugadores;
     }
 
+    public static LocalDate pedirUltimaFechaRegistrada() throws SQLException {
+        //Ejecuto una petición SQL
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM fechas");
+        LocalDate ultimaFecha = null;
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            ultimaFecha = resultSet.getDate(1).toLocalDate();
+            while (resultSet.next()) {
+                ultimaFecha = compararFechas(ultimaFecha, resultSet.getDate(1).toLocalDate());
+            }
+        }
+
+        return ultimaFecha;
+    }
+
+    private static LocalDate compararFechas(LocalDate fechaMasActual, LocalDate fechaBD) {
+
+        LocalDate ultima = fechaMasActual;
+        if (fechaMasActual != null) {
+            if (fechaBD.isAfter(fechaMasActual)) {
+                ultima = fechaBD;
+            }
+        }
+
+        return ultima;
+    }
+
 
     public static void cargarDato(Jugador jugador) throws SQLException {
 
@@ -77,8 +105,20 @@ public class ConexionBD {
 
     }
 
-    public static void editarDato(String nombre, String patente) throws SQLException {
+    public static void cargarDato(LocalDate date) throws SQLException {
 
+        //Prompt de carga de dato
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO fechas (fecha) VALUES (?)");
+
+        statement.setDate(1, Date.valueOf(date));
+
+        statement.execute();
+        statement.close();
+
+
+    }
+
+    public static void editarDato(String nombre, String patente) throws SQLException {
         //Prompt actualización de datos
         PreparedStatement statement = connection.prepareStatement("UPDATE usuarios SET patente = ? WHERE nombre = ?");
 
@@ -88,8 +128,21 @@ public class ConexionBD {
 
         //Ejecuto la modificación
         statement.executeUpdate();
-
         statement.close();
+    }
+
+    public static void editarDato(String nombre, int dias_primero) throws SQLException {
+
+        PreparedStatement statement = connection.prepareStatement("UPDATE usuarios SET dias_primero = ? WHERE nombre = ?");
+
+        //Modifico los datos
+        statement.setInt(1, dias_primero);
+        statement.setString(2, nombre);
+
+        //Ejecuto la modificación
+        statement.executeUpdate();
+        statement.close();
+
 
     }
 }
