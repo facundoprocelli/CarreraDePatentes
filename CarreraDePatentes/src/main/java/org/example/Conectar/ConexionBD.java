@@ -2,6 +2,7 @@ package org.example.Conectar;
 
 import org.example.Module.Jugador;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,6 +13,9 @@ public class ConexionBD {
     private static String contrasena = "";
     private static String usuario = "root";
     private static Connection connection;
+
+    private static Process apacheProcess;
+    private static Process mysqlProcess;
 
 
     public ConexionBD() {
@@ -170,7 +174,31 @@ public class ConexionBD {
         //Ejecuto la modificación
         statement.executeUpdate();
         statement.close();
-
-
     }
+
+
+    public static void iniciarServidores() {
+        String apacheStart = "D:\\XAMPP\\apache_start.bat";
+        String mysqlStart = "D:\\XAMPP\\mysql_start.bat";
+
+        try {
+            // Iniciar Apache
+            ProcessBuilder apacheProcessBuilder = new ProcessBuilder(apacheStart);
+            apacheProcess = apacheProcessBuilder.start();
+            System.out.println("Apache iniciado.");
+
+            // Iniciar MySQL
+            ProcessBuilder mysqlProcessBuilder = new ProcessBuilder(mysqlStart);
+            mysqlProcess = mysqlProcessBuilder.start();
+            System.out.println("MySQL iniciado.");
+            Thread.sleep(5000);
+
+        } catch ( IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }

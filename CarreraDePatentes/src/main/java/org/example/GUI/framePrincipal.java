@@ -1,5 +1,7 @@
 package org.example.GUI;
 
+
+
 import org.example.Conectar.ConexionBD;
 import org.example.Module.Jugador;
 
@@ -46,12 +48,6 @@ public class framePrincipal extends javax.swing.JFrame {
 
     // End of variables declaration
     public framePrincipal() {
-        initComponents();
-        ordenActual = 1;
-        ultimaPAtenteAgregada();
-        //ultimaPatente = "AA999AA";
-        cargarTablaJugadores(ordenActual);
-        mostrarEstadisticas();
     }
 
 
@@ -85,12 +81,14 @@ public class framePrincipal extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
 
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1016, 630)); // todo: hay que probar bien el tamaño para saber bien cual es
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1016, 630));
         setResizable(false);
 
         jPanel4.setBackground(new java.awt.Color(110, 172, 216));
         jPanel4.setPreferredSize(new java.awt.Dimension(1000, 600));
+
+
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][]{
@@ -420,6 +418,7 @@ public class framePrincipal extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>
 
 
@@ -550,11 +549,15 @@ public class framePrincipal extends javax.swing.JFrame {
 
     public void empezarPrograma() {
 
+        //ConexionBD.iniciarServidores();
+        initComponents();
+        ordenActual = 1;
+        ultimaPAtenteAgregada();
+        cargarTablaJugadores(ordenActual);
+        mostrarEstadisticas();
         actualizarDiasGanando();
-        framePrincipal frame = new framePrincipal();
-        frame.setVisible(true);
 
-
+        setVisible(true);
     }
 
     private boolean nombreRepetido(String nombre) {
