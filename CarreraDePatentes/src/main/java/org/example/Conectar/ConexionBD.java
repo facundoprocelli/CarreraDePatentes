@@ -200,5 +200,32 @@ public class ConexionBD {
         }
     }
 
+    public static void cerrarServidores() {
+        String apacheStop = "D:\\XAMPP\\apache_stop.bat";
+        String mysqlStop = "D:\\XAMPP\\mysql_stop.bat";
+
+        try {
+            // Detener MySQL
+            ProcessBuilder mysqlStopBuilder = new ProcessBuilder(mysqlStop);
+            Process mysqlStopProcess = mysqlStopBuilder.start();
+            mysqlStopProcess.waitFor();
+            System.out.println("MySQL detenido.");
+
+            // Detener Apache
+            ProcessBuilder apacheStopBuilder = new ProcessBuilder(apacheStop);
+            Process apacheStopProcess = apacheStopBuilder.start();
+            apacheStopProcess.waitFor();
+            System.out.println("Apache detenido.");
+
+            // Esperar a que los procesos terminen completamente
+            mysqlStopProcess.destroy();
+            apacheStopProcess.destroy();
+            mysqlStopProcess.waitFor();
+            apacheStopProcess.waitFor();
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -1,12 +1,16 @@
 package org.example.GUI;
 
 
-
 import org.example.Conectar.ConexionBD;
+import org.example.Main;
 import org.example.Module.Jugador;
 
+import javax.print.DocFlavor;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -14,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class framePrincipal extends javax.swing.JFrame {
 
@@ -85,9 +90,28 @@ public class framePrincipal extends javax.swing.JFrame {
         setPreferredSize(new java.awt.Dimension(1016, 630));
         setResizable(false);
 
+        // Cargar el icono
+        URL logoURL = Main.class.getResource("/CDPb.png");
+        if(logoURL != null) {
+            ImageIcon icon = new ImageIcon(logoURL);
+            setIconImage(icon.getImage());
+        }else{
+            ErrorPopUp.showErrorDialog(this, "No se pudo cargar el logo");
+        }
+
+        //todo: No tengo permisos suficientes
+        /*
+        // Agregar el WindowListener a la ventana
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                ConexionBD.cerrarServidores(); // Llamar a tu método para cerrar los servidores
+                dispose(); // Cerrar la ventana
+            }
+        });
+*/
         jPanel4.setBackground(new java.awt.Color(110, 172, 216));
         jPanel4.setPreferredSize(new java.awt.Dimension(1000, 600));
-
 
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -125,7 +149,14 @@ public class framePrincipal extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        jLabel1.setIcon(new javax.swing.ImageIcon("src/main/resources/carrera de patentes v3.png"));
+        URL imgURL = Main.class.getResource("/carrera de patentes v3.png");
+
+        if (imgURL != null) {
+            jLabel1.setIcon(new javax.swing.ImageIcon(imgURL));
+        } else{
+            ErrorPopUp.showErrorDialog(this, "No se pudo cargar la imagen");
+        }
+
 
         jPanel1.setBackground(new java.awt.Color(0, 36, 194));
 
@@ -699,16 +730,16 @@ public class framePrincipal extends javax.swing.JFrame {
     public void mostrarEstadisticas() {
 
         String mensaje = String.format("""
-                El Jugador que más días primero va es: %s
+                El Jugador que más días primero va es:  %s con %s día/s
                 La patente más reciente es: %s
                 La ultima patente agregada es: %s
-                """, getDatoMayoJugador("dias_primero"), getDatoMayoJugador("patente"), ultimaPatente);
+                """, getNombreJugadorGanando() ,getDatoMayoJugador("dias_primero"), getDatoMayoJugador("patente"), ultimaPatente);
 
         areaDeTextoEstadisticas.setText(mensaje);
     }
 
 
-    private String getDatoMayoJugador(String columna){
+    private String getDatoMayoJugador(String columna) {
         String dato = "";
         try {
             ConexionBD.conectarBD();
@@ -722,14 +753,18 @@ public class framePrincipal extends javax.swing.JFrame {
 
     }
 
-    private void ultimaPAtenteAgregada(){
+    private void ultimaPAtenteAgregada() {
         try {
             ConexionBD.conectarBD();
-             ultimaPatente = ConexionBD.pedirDatoUltimoJugadorIngresadoABD("patente");
-             ConexionBD.desconaectarBD();
+            ultimaPatente = ConexionBD.pedirDatoUltimoJugadorIngresadoABD("patente");
+            ConexionBD.desconaectarBD();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getNombreJugadorGanando(){
+        return  getJugadorGanando().getNombre();
     }
 }
 
