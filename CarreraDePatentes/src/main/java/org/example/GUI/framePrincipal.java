@@ -439,6 +439,8 @@ public class framePrincipal extends javax.swing.JFrame {
                     ConexionBD.desconaectarBD();
                 } else {
                     ErrorPopUp.showErrorDialog(this, "El nombre esta repetido");
+
+
                 }
             } else {
                 ErrorPopUp.showErrorDialog(this, "El nombre está vacío");
@@ -729,23 +731,6 @@ public class framePrincipal extends javax.swing.JFrame {
             throw new RuntimeException(e);
         }
     }
-
-
-    private String getUltimoDatoAgregado(String columna) {
-        String dato = "";
-
-        try{
-            ConexionBD.conectarBD();
-            dato = ConexionBD.pedirDatoUltimoJugadorIngresadoABD(columna);
-            ConexionBD.desconaectarBD();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return dato;
-    }
-
-
 }
 
 

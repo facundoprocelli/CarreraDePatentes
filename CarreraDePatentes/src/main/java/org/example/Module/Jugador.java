@@ -83,9 +83,6 @@ public class Jugador implements Comparable {
         return id;
     }
 
-    public void sumarUnDiaGanado(){
-        setDias_primero(getDias_primero() + 1);
-    }
 
     @Override
     public String toString() {
