@@ -1,4 +1,5 @@
-# CarreraDePatentes
+
+![](https://raw.githubusercontent.com/facundoprocelli/CarreraDePatentes/main/repo-banner.png)
 
 ## Descripción del Proyecto
 
