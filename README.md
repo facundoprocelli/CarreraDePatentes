@@ -34,15 +34,15 @@ El proyecto está desarrollado en Java utilizando Maven como herramienta de cons
    - Crea una nueva base de datos llamada `carreradepatentes`.
 
 2. **Crear las Tablas**:
-   - Crea la tabla "usuarios" con: id_usuario, nombre, patente, dias_primero.
-   - Crea la tabla "fechas" con: fecha;
-   - 
+   - Crea la tabla "usuarios" con: "id_usuario" , "nombre" , "patente" ,  "dias_primero".
+   - Crea la tabla "fechas" con: "fecha".
+     
 ### 3. Usar la aplicación
 
 1. **Ejecutar el .exe**:
    - Descarga el archivo Carrera de Patentes.exe y ejecutalo.
 
-## 3.1 Configuración del Proyecto
+### 3.1 Configuración del Proyecto
 
 1. **Clonar el Repositorio**:
    - Clona este repositorio en tu máquina local.
