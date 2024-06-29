@@ -37,12 +37,8 @@ El proyecto está desarrollado en Java utilizando Maven como herramienta de cons
    - Crea la tabla "usuarios" con: "id_usuario" , "nombre" , "patente" ,  "dias_primero".
    - Crea la tabla "fechas" con: "fecha".
      
-### 3. Usar la aplicación
 
-1. **Ejecutar el .exe**:
-   - Descarga el archivo Carrera de Patentes.exe y ejecutalo.
-
-### 3.1 Configuración del Proyecto
+### 3 Configuración del Proyecto
 
 1. **Clonar el Repositorio**:
    - Clona este repositorio en tu máquina local.
@@ -60,7 +56,11 @@ El proyecto está desarrollado en Java utilizando Maven como herramienta de cons
 
 ### 4. Ejecución de la Aplicación
 
-1. **Iniciar la Aplicación**:
+1. **Ejecutar el .exe**:
+   - Descarga el archivo Carrera de Patentes.exe y ejecutalo.
+  
+     
+1.1. **Iniciar la Aplicación**:
    - Ejecuta el archivo JAR generado.
 
      ```bash
