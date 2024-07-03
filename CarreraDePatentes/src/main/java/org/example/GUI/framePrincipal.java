@@ -1,6 +1,7 @@
 package org.example.GUI;
 
 
+import com.thoughtworks.qdox.parser.impl.Parser;
 import org.example.Conectar.ConexionBD;
 import org.example.Main;
 import org.example.Module.Jugador;
@@ -733,7 +734,7 @@ public class framePrincipal extends javax.swing.JFrame {
                 El Jugador que más días primero va es:  %s con %s día/s
                 La patente más reciente es: %s
                 La ultima patente agregada es: %s
-                """, getNombreJugadorGanando() ,getDatoMayoJugador("dias_primero"), getDatoMayoJugador("patente"), ultimaPatente);
+                """, getNombreJugadorMasGanador() ,getDatoMayoJugador("dias_primero"), getDatoMayoJugador("patente"), ultimaPatente);
 
         areaDeTextoEstadisticas.setText(mensaje);
     }
@@ -763,9 +764,39 @@ public class framePrincipal extends javax.swing.JFrame {
         }
     }
 
-    private String getNombreJugadorGanando(){
-        return  getJugadorGanando().getNombre();
+
+    private String getNombreJugadorMasGanador(){
+        ArrayList<Jugador> jugador;
+        String nombre = "";
+        try {
+        ConexionBD.conectarBD();
+            jugador = ConexionBD.pedirDatosJugadores();
+
+           nombre = getNombreJugadorQueVaGanando(jugador);
+            ConexionBD.desconaectarBD();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return nombre;
     }
+
+
+    private String getNombreJugadorQueVaGanando(ArrayList<Jugador> jugadores)
+    {
+        String nombre = "";
+        for(Jugador j : jugadores){
+            String diaPrimero = getDatoMayoJugador("dias_primero");
+
+            if(j.getDias_primero() == Integer.parseInt(diaPrimero)){
+                nombre = j.getNombre();
+            }
+
+        }
+    return nombre;
+    }
+
+
+
 }
 
 
